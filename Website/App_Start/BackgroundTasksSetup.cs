@@ -3,6 +3,7 @@ using System.Web;
 using Elmah;
 using NuGetGallery.Jobs;
 using WebBackgrounder;
+using System.Web.Mvc;
 
 [assembly: WebActivator.PostApplicationStartMethod(typeof(NuGetGallery.BackgroundTasksSetup), "Start")]
 [assembly: WebActivator.ApplicationShutdownMethodAttribute(typeof(NuGetGallery.BackgroundTasksSetup), "Stop")]
@@ -10,14 +11,15 @@ namespace NuGetGallery
 {
     public static class BackgroundTasksSetup
     {
-        static readonly HttpApplication _elmahHttpApplication = new ElmahSignalScopeHttpApplication();
-        static JobManager _jobManager = CreateJobManager();
+        private static readonly HttpApplication _elmahHttpApplication = new ElmahSignalScopeHttpApplication();
+        private static JobManager _jobManager = CreateJobManager();
 
         private static JobManager CreateJobManager()
         {
             var jobs = new IJob[] { 
                 new UpdateStatisticsJob(TimeSpan.FromSeconds(10), () => new EntitiesContext(), timeout: TimeSpan.FromMinutes(5)),
-                new WorkItemCleanupJob(TimeSpan.FromDays(1), () => new EntitiesContext(), timeout: TimeSpan.FromDays(4))
+                new WorkItemCleanupJob(TimeSpan.FromDays(1), () => new EntitiesContext(), timeout: TimeSpan.FromDays(4)),
+                new LuceneIndexerJob(TimeSpan.FromMinutes(1), timeout: TimeSpan.FromMinutes(2)),
             };
 
             var jobCoordinator = new WebFarmJobCoordinator(new EntityWorkItemRepository(() => new EntitiesContext()));

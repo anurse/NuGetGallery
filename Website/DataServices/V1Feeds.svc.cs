@@ -35,7 +35,6 @@ namespace NuGetGallery
            object entity,
            DataServiceOperationContext operationContext)
         {
-
             var package = (V1FeedPackage)entity;
             var httpContext = new HttpContextWrapper(HttpContext.Current);
             var urlHelper = new UrlHelper(new RequestContext(httpContext, new RouteData()));
@@ -48,18 +47,16 @@ namespace NuGetGallery
         [WebGet]
         public IQueryable<V1FeedPackage> Search(string searchTerm, string targetFramework)
         {
-
-
             // Only allow listed stable releases to be returned when searching the v1 feed.
             var packages = PackageRepo.GetAll().Where(p => !p.IsPrerelease && p.Listed);
 
             if (String.IsNullOrEmpty(searchTerm))
             {
-                return packages.ToV1FeedPackageQuery();
+                return packages.ToV1FeedPackageQuery(Configuration.SiteRoot);
             }
             return packages.Search(searchTerm)
                            .SortByRelevance()
-                           .ToV1FeedPackageQuery();
+                           .ToV1FeedPackageQuery(Configuration.SiteRoot);
         }
     }
 }
