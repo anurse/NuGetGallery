@@ -11,6 +11,7 @@ using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 using Ninject;
 using Ninject.Web.Mvc;
 using NuGetGallery;
+using NuGetGallery.Configuration;
 using NuGetGallery.Infrastructure;
 using NuGetGallery.Infrastructure.Jobs;
 using NuGetGallery.Jobs;
@@ -39,7 +40,7 @@ namespace NuGetGallery
         public static void PostStart()
         {
             // Get configuration from the kernel
-            var config = Container.Kernel.Get<IConfiguration>();
+            var config = Container.Kernel.Get<IAppConfiguration>();
             DbMigratorPostStart();
             BackgroundJobsPostStart(config);
             AppPostStart();
@@ -69,7 +70,8 @@ namespace NuGetGallery
             // Modernizr needs to be delivered at the top of the page but putting it in a bundle gets us a cache-buster.
             // TODO: Use minified modernizr!
             var modernizrBundle = new ScriptBundle("~/bundles/modernizr")
-                .Include("~/Scripts/modernizr-2.0.6-development-only.js");
+//                .Include("~/Scripts/modernizr-2.0.6-development-only.js");
+                .Include("~/Scripts/modernizr-2.6.2.js");
             BundleTable.Bundles.Add(modernizrBundle);
 
             var stylesBundle = new StyleBundle("~/bundles/css")
@@ -95,7 +97,7 @@ namespace NuGetGallery
             ValueProviderFactories.Factories.Add(new HttpHeaderValueProviderFactory());
         }
 
-        private static void BackgroundJobsPostStart(IConfiguration configuration)
+        private static void BackgroundJobsPostStart(IAppConfiguration configuration)
         {
             var jobs = configuration.HasWorker ?
                 new IJob[]
